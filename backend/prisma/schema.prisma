@@ -44,6 +44,7 @@ model User {
   id                String       @id @default(uuid())
   email             String       @unique
   passwordHash      String       @map("password_hash")
+  refreshTokenHash  String?      @map("refresh_token_hash")
   fullName          String       @map("full_name")
   isActive          Boolean      @default(true) @map("is_active")
   resetTokenHash    String?      @map("reset_token_hash")
