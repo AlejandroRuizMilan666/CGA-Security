@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  ADMIN
+  EMPRESA
+  ALUMNO
+}
+
+enum ModuleType {
+  VIDEO
+  DOCUMENT
+  TEXT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum DocumentDirection {
+  INCOMING
+  OUTGOING
+}
+
+model Role {
+  id        String   @id @default(uuid())
+  name      RoleName @unique
+  users     User[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model User {
+  id                String       @id @default(uuid())
+  email             String       @unique
+  passwordHash      String       @map("password_hash")
+  fullName          String       @map("full_name")
+  isActive          Boolean      @default(true) @map("is_active")
+  resetTokenHash    String?      @map("reset_token_hash")
+  resetTokenExpires DateTime?    @map("reset_token_expires")
+  roleId            String       @map("role_id")
+  role              Role         @relation(fields: [roleId], references: [id])
+  company           Company?
+  enrollments       Enrollment[]
+  createdCourses    Course[]     @relation("CreatedCourses")
+  uploadedDocuments Document[]   @relation("UploadedDocuments")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Company {
+  id          String     @id @default(uuid())
+  userId      String     @unique @map("user_id")
+  companyName String     @map("company_name")
+  taxId       String     @unique @map("tax_id")
+  phone       String?
+  address     String?
+  user        User       @relation(fields: [userId], references: [id])
+  documents   Document[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("companies")
+}
+
+model Course {
+  id          String         @id @default(uuid())
+  title       String
+  slug        String         @unique
+  description String?
+  price       Decimal        @db.Decimal(10, 2)
+  isPublished Boolean        @default(false) @map("is_published")
+  createdById String         @map("created_by_id")
+  createdBy   User           @relation("CreatedCourses", fields: [createdById], references: [id])
+  modules     CourseModule[]
+  enrollments Enrollment[]
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  @@index([createdById])
+  @@map("courses")
+}
+
+model CourseModule {
+  id          String     @id @default(uuid())
+  courseId    String     @map("course_id")
+  title       String
+  description String?
+  type        ModuleType
+  contentUrl  String?    @map("content_url")
+  position    Int
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    Progress[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@unique([courseId, position])
+  @@index([courseId])
+  @@map("course_modules")
+}
+
+model Enrollment {
+  id               String        @id @default(uuid())
+  userId           String        @map("user_id")
+  courseId         String        @map("course_id")
+  paymentStatus    PaymentStatus @default(PENDING) @map("payment_status")
+  paymentReference String?       @map("payment_reference")
+  enrolledAt       DateTime      @default(now()) @map("enrolled_at")
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progressEntries  Progress[]
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model Progress {
+  id             String       @id @default(uuid())
+  enrollmentId   String       @map("enrollment_id")
+  courseModuleId String       @map("course_module_id")
+  completed      Boolean      @default(false)
+  completedAt    DateTime?    @map("completed_at")
+  enrollment     Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  courseModule   CourseModule @relation(fields: [courseModuleId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, courseModuleId])
+  @@index([courseModuleId])
+  @@map("progress")
+}
+
+model Document {
+  id           String            @id @default(uuid())
+  companyId    String            @map("company_id")
+  uploadedById String?           @map("uploaded_by_id")
+  originalName String            @map("original_name")
+  storageName  String            @map("storage_name")
+  mimeType     String            @map("mime_type")
+  sizeBytes    BigInt            @map("size_bytes")
+  direction    DocumentDirection
+  notes        String?
+  company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  uploadedBy   User?             @relation("UploadedDocuments", fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  @@index([companyId])
+  @@index([uploadedById])
+  @@map("documents")
+}

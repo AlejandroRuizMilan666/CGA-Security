@@ -1,0 +1,17 @@
+{
+  "name": "cga-security-platform",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm --workspace backend run start:dev",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "prisma:generate": "npm --workspace backend run prisma:generate",
+    "prisma:migrate": "npm --workspace backend run prisma:migrate",
+    "prisma:studio": "npm --workspace backend run prisma:studio"
+  }
+}
