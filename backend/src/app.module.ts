@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { BootstrapService } from './bootstrap/bootstrap.service';
 import { CompaniesModule } from './companies/companies.module';
 import { validateEnvironment } from './config/env.validation';
+import { CoursesModule } from './courses/courses.module';
+import { DocumentsModule } from './documents/documents.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 
@@ -26,6 +28,8 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     UsersModule,
     CompaniesModule,
+    CoursesModule,
+    DocumentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, BootstrapService],

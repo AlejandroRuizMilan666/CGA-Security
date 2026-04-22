@@ -79,5 +79,11 @@ export function validateEnvironment(config: RawConfig) {
     ),
     THROTTLE_TTL: readNumber(config, 'THROTTLE_TTL', 60000),
     THROTTLE_LIMIT: readNumber(config, 'THROTTLE_LIMIT', 10),
+    S3_ENDPOINT: readString(config, 'S3_ENDPOINT', 'http://localhost:9000'),
+    S3_REGION: readString(config, 'S3_REGION', 'us-east-1'),
+    S3_BUCKET: readString(config, 'S3_BUCKET', 'cga-security-documents'),
+    S3_ACCESS_KEY: readString(config, 'S3_ACCESS_KEY', 'minioadmin'),
+    S3_SECRET_KEY: readString(config, 'S3_SECRET_KEY', 'minioadmin'),
+    S3_FORCE_PATH_STYLE: readString(config, 'S3_FORCE_PATH_STYLE', 'true'),
   };
 }
