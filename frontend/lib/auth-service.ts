@@ -152,3 +152,16 @@ export async function enrollInCourse(courseId: string) {
   const { data } = await api.post(`/courses/${courseId}/enroll`);
   return data;
 }
+
+export interface UpdateProfilePayload {
+  fullName?: string;
+}
+
+export async function updateProfile(payload: UpdateProfilePayload) {
+  const { data } = await api.patch<AppUser>("/users/me", payload);
+  return data;
+}
+
+export async function logoutRequest() {
+  await api.post("/auth/logout");
+}

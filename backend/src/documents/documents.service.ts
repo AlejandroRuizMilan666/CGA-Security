@@ -73,12 +73,18 @@ export class DocumentsService {
 
     this.validateFile(file);
 
+    // Multer delivers originalname encoded as Latin-1; decode to UTF-8 so
+    // accented characters (tildes, ñ, etc.) are stored correctly.
+    const originalName = Buffer.from(file.originalname, 'latin1').toString(
+      'utf8',
+    );
+
     const companyId = await this.resolveTargetCompanyId(
       currentUser,
       dto.companyId,
     );
     const storageResult = await this.documentsStorageService.uploadObject(
-      file,
+      { ...file, originalname: originalName },
       companyId,
     );
 
@@ -87,7 +93,7 @@ export class DocumentsService {
         data: {
           companyId,
           uploadedById: currentUser.userId,
-          originalName: file.originalname,
+          originalName,
           storageName: storageResult.storageName,
           mimeType: file.mimetype,
           sizeBytes: BigInt(file.size),
@@ -129,7 +135,7 @@ export class DocumentsService {
 
     return {
       ...this.serializeDocument(document),
-      downloadUrl: signedUrl,
+      url: signedUrl,
       expiresInSeconds: 300,
     };
   }

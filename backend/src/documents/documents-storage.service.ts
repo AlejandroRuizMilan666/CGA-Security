@@ -70,10 +70,16 @@ export class DocumentsStorageService implements OnModuleInit {
   }
 
   async getSignedDownloadUrl(storageName: string, originalName: string) {
+    // Use RFC 5987 encoding so browsers display accented characters and
+    // other Unicode characters in the downloaded filename correctly.
+    const ascii = this.sanitizeFileName(originalName);
+    const encoded = encodeURIComponent(originalName);
+    const contentDisposition = `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;
+
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: storageName,
-      ResponseContentDisposition: `attachment; filename="${this.sanitizeFileName(originalName)}"`,
+      ResponseContentDisposition: contentDisposition,
     });
 
     return getSignedUrl(this.client, command, { expiresIn: 300 });

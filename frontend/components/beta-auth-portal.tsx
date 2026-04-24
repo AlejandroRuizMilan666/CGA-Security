@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@/lib/auth-context';
 import {
     clearStoredSession,
     createCourse,
@@ -8,7 +9,6 @@ import {
     fetchCourses,
     getStoredSession,
     login,
-    persistSession,
     registerCompany,
     registerStudent,
     type AuthResponse,
@@ -17,13 +17,14 @@ import {
 } from '@/lib/auth-service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const loginSchema = z.object({
   email: z.string().email('Introduce un email valido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
 });
 
 const studentSchema = z.object({
@@ -76,6 +77,8 @@ function getErrorMessage(error: unknown) {
 }
 
 export function BetaAuthPortal() {
+  const router = useRouter();
+  const { applySession: ctxApplySession } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [view, setView] = useState<AppView>('home');
   const [session, setSession] = useState<AuthResponse | null>(null);
@@ -163,12 +166,24 @@ export function BetaAuthPortal() {
 
     void loadCourses();
   }, [loadAdminCourses, loadCourses]);
-
   function applySession(nextSession: AuthResponse, message: string) {
-    persistSession(nextSession);
-    setSession(nextSession);
-    setView('home');
+    ctxApplySession(nextSession); // updates AuthContext + persists to localStorage
+    setSession(nextSession);      // updates local BetaAuthPortal state
     setStatusMessage(message);
+
+    // Redirect to the role-specific dashboard
+    const roleRoutes: Record<string, string> = {
+      ADMIN: '/admin',
+      EMPRESA: '/empresa',
+      ALUMNO: '/alumno',
+    };
+    const route = roleRoutes[nextSession.user.role];
+    if (route) {
+      router.push(route);
+      return;
+    }
+
+    setView('home');
     void loadCourses();
     void loadAdminCourses(nextSession.user.role === 'ADMIN');
   }
@@ -281,8 +296,23 @@ export function BetaAuthPortal() {
                 </span>
                 <button
                   type="button"
+                  onClick={() => {
+                    const roleRoutes: Record<string, string> = {
+                      ADMIN: '/admin',
+                      EMPRESA: '/empresa',
+                      ALUMNO: '/alumno',
+                    };
+                    const route = roleRoutes[session.user.role];
+                    if (route) router.push(route);
+                  }}
+                  className="cursor-pointer rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400"
+                >
+                  Ir al panel →
+                </button>
+                <button
+                  type="button"
                   onClick={handleLogout}
-                  className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800"
+                  className="cursor-pointer rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800"
                 >
                   Cerrar sesión
                 </button>
@@ -343,7 +373,7 @@ export function BetaAuthPortal() {
                     key={item.key}
                     type="button"
                     onClick={() => setMode(item.key as AuthMode)}
-                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                    className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition ${
                       mode === item.key
                         ? 'bg-cyan-500 text-slate-950'
                         : 'border border-slate-700 bg-slate-950 text-slate-200 hover:bg-slate-800'
@@ -547,7 +577,7 @@ export function BetaAuthPortal() {
                 <button
                   type="button"
                   onClick={() => void loadAdminCourses(true)}
-                  className="rounded-xl border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800"
+                  className="cursor-pointer rounded-xl border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800"
                 >
                   Recargar
                 </button>
@@ -608,7 +638,7 @@ function NavButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+      className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition ${
         active
           ? 'bg-cyan-500 text-slate-950'
           : 'border border-slate-700 bg-slate-950 text-slate-200 hover:bg-slate-800'
@@ -659,7 +689,7 @@ function ActionCard({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-left hover:bg-slate-950"
+      className="cursor-pointer rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-left hover:bg-slate-950"
     >
       <p className="font-semibold text-white">{title}</p>
       <p className="mt-2 text-sm text-slate-300">{description}</p>
@@ -695,7 +725,7 @@ function CourseCard({
         <button
           type="button"
           onClick={onEnroll}
-          className="mt-3 rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+          className="cursor-pointer mt-3 rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
         >
           Inscribirme
         </button>

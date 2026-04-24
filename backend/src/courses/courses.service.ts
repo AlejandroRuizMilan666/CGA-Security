@@ -255,7 +255,7 @@ export class CoursesService {
         paymentStatus: enrollment.paymentStatus,
         paymentReference: enrollment.paymentReference,
         enrolledAt: enrollment.enrolledAt,
-        progressPercentage:
+        progressPercent:
           totalModules === 0
             ? 0
             : Math.round((completedModules / totalModules) * 100),
@@ -264,6 +264,17 @@ export class CoursesService {
           title: enrollment.course.title,
           slug: enrollment.course.slug,
           description: enrollment.course.description,
+          price: enrollment.course.price,
+          isPublished: enrollment.course.isPublished,
+          enrollmentCount: 0,
+          modules: enrollment.course.modules.map((m) => ({
+            id: m.id,
+            title: m.title,
+            description: m.description,
+            type: m.type,
+            contentUrl: m.contentUrl,
+            position: m.position,
+          })),
         },
       };
     });
@@ -294,28 +305,53 @@ export class CoursesService {
       (entry) => entry.completed,
     ).length;
 
+    const progressPercent =
+      totalModules === 0
+        ? 0
+        : Math.round((completedModules / totalModules) * 100);
+
     return {
-      enrollmentId: enrollment.id,
+      enrollment: {
+        id: enrollment.id,
+        paymentStatus: enrollment.paymentStatus,
+      },
       course: {
         id: enrollment.course.id,
         title: enrollment.course.title,
         slug: enrollment.course.slug,
+        description: enrollment.course.description,
+        price: enrollment.course.price,
+        isPublished: enrollment.course.isPublished,
+        enrollmentCount: 0,
+        modules: enrollment.course.modules.map((m) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description,
+          type: m.type,
+          contentUrl: m.contentUrl,
+          position: m.position,
+        })),
       },
-      totalModules,
-      completedModules,
-      progressPercentage:
-        totalModules === 0
-          ? 0
-          : Math.round((completedModules / totalModules) * 100),
-      modules: enrollment.course.modules.map((module) => ({
-        id: module.id,
-        title: module.title,
-        type: module.type,
-        position: module.position,
-        completed: enrollment.progressEntries.some(
-          (entry) => entry.courseModuleId === module.id && entry.completed,
-        ),
-      })),
+      progressPercent,
+      modules: enrollment.course.modules.map((module) => {
+        const entry = enrollment.progressEntries.find(
+          (e) => e.courseModuleId === module.id,
+        );
+        return {
+          id: entry?.id ?? module.id,
+          courseModuleId: module.id,
+          completed: entry?.completed ?? false,
+          completedAt: entry?.completedAt ?? null,
+          module: {
+            id: module.id,
+            title: module.title,
+            description: module.description,
+            type: module.type,
+            contentUrl: module.contentUrl,
+            position: module.position,
+          },
+        };
+      }),
     };
   }
 
