@@ -22,39 +22,6 @@ export interface AuthResponse {
   user: AppUser;
 }
 
-export interface CourseSummary {
-  id: string;
-  title: string;
-  slug: string;
-  description?: string | null;
-  price: number;
-  isPublished: boolean;
-  enrollmentCount: number;
-  modules: Array<{
-    id: string;
-    title: string;
-    type: string;
-    position: number;
-  }>;
-}
-
-export interface CreateCourseModulePayload {
-  title: string;
-  description?: string;
-  type: "TEXT" | "VIDEO" | "DOCUMENT";
-  contentUrl?: string;
-  position?: number;
-}
-
-export interface CreateCoursePayload {
-  title: string;
-  slug?: string;
-  description?: string;
-  price: number;
-  isPublished?: boolean;
-  modules?: CreateCourseModulePayload[];
-}
-
 const SESSION_KEY = "cga-beta-session";
 
 export function setAuthorizationToken(token: string | null) {
@@ -133,35 +100,23 @@ export async function registerCompany(payload: {
   return data;
 }
 
-export async function fetchCourses() {
-  const { data } = await api.get<CourseSummary[]>("/courses");
+export async function forgotPassword(
+  email: string,
+): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>(
+    "/auth/forgot-password",
+    { email },
+  );
   return data;
 }
 
-export async function fetchAdminCourses() {
-  const { data } = await api.get<CourseSummary[]>("/courses/admin/all");
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>("/auth/reset-password", {
+    token,
+    newPassword,
+  });
   return data;
-}
-
-export async function createCourse(payload: CreateCoursePayload) {
-  const { data } = await api.post<CourseSummary>("/courses", payload);
-  return data;
-}
-
-export async function enrollInCourse(courseId: string) {
-  const { data } = await api.post(`/courses/${courseId}/enroll`);
-  return data;
-}
-
-export interface UpdateProfilePayload {
-  fullName?: string;
-}
-
-export async function updateProfile(payload: UpdateProfilePayload) {
-  const { data } = await api.patch<AppUser>("/users/me", payload);
-  return data;
-}
-
-export async function logoutRequest() {
-  await api.post("/auth/logout");
 }

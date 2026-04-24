@@ -3,17 +3,17 @@
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/lib/auth-context';
 import {
-    faBars,
-    faBook,
-    faBuilding,
-    faFile,
-    faGear,
-    faGraduationCap,
-    faHouse,
-    faMagnifyingGlass,
-    faRightFromBracket,
-    faUser,
-    faUsers,
+  faBars,
+  faBook,
+  faBuilding,
+  faFile,
+  faGear,
+  faGraduationCap,
+  faHouse,
+  faMagnifyingGlass,
+  faRightFromBracket,
+  faUser,
+  faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';

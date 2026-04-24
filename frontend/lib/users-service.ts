@@ -22,11 +22,6 @@ export async function fetchUsers(): Promise<UserDetail[]> {
   return data;
 }
 
-export async function fetchUserById(id: string): Promise<UserDetail> {
-  const { data } = await api.get<UserDetail>(`/users/${id}`);
-  return data;
-}
-
 export async function fetchMe(): Promise<UserDetail> {
   const { data } = await api.get<UserDetail>("/users/me");
   return data;
