@@ -53,7 +53,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
-      `connect-src 'self' http://localhost:3001 ${process.env.NEXT_PUBLIC_API_URL ?? ""}`.trim(), // backend API
+      `connect-src 'self' http://localhost:3001 ${process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL).origin : ""}`.trim(), // backend API
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
