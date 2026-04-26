@@ -1,6 +1,5 @@
 'use client';
 
-import { roleBadge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import type { AppRole } from '@/lib/auth-service';
 import { adminUpdateUser, fetchUsers, type AdminUpdateUserPayload, type UserDetail } from '@/lib/users-service';
@@ -30,7 +29,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => { void load(); }, []);
 
-  const filtered = filter === 'ALL' ? users : users.filter((u) => u.role.name === filter);
+  const filtered = filter === 'ALL' ? users : users.filter((u) => u.role === filter);
 
   async function handleSave() {
     if (!editing) return;
@@ -91,7 +90,6 @@ export default function AdminUsersPage() {
               <tr className="border-b border-slate-800 bg-slate-900/60">
                 <th className="px-4 py-3 text-left font-semibold text-slate-400">Nombre</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-400">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-400">Rol</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-400">Estado</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-400">Empresa</th>
                 <th className="px-4 py-3 text-right font-semibold text-slate-400">Acciones</th>
@@ -102,7 +100,6 @@ export default function AdminUsersPage() {
                 <tr key={user.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
                   <td className="px-4 py-3 font-medium text-white">{user.fullName}</td>
                   <td className="px-4 py-3 text-slate-300">{user.email}</td>
-                  <td className="px-4 py-3">{roleBadge(user.role.name)}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${user.isActive ? 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30' : 'bg-red-500/15 text-red-300 ring-red-500/30'}`}>
                       {user.isActive ? 'Activo' : 'Inactivo'}
@@ -117,7 +114,7 @@ export default function AdminUsersPage() {
                           id: user.id,
                           fullName: user.fullName,
                           isActive: user.isActive,
-                          role: user.role.name,
+                          role: user.role,
                         })
                       }
                       className="cursor-pointer rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold hover:bg-slate-600 transition-colors"

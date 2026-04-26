@@ -19,12 +19,13 @@ export class MailService {
     await transporter.sendMail({
       from: this.configService.get<string>('SMTP_FROM'),
       to: options.email,
-      subject: 'Recuperacion de contraseña',
+      subject: 'Recuperación de contraseña',
       text: `Hola ${options.fullName},\n\nHemos recibido una solicitud para restablecer tu contraseña. Usa este enlace: ${options.resetUrl}\n\nSi no has solicitado este cambio, ignora este mensaje.`,
       html: `<p>Hola ${options.fullName},</p><p>Hemos recibido una solicitud para restablecer tu contraseña.</p><p><a href="${options.resetUrl}">Restablecer contraseña</a></p><p>Si no has solicitado este cambio, ignora este mensaje.</p>`,
     });
 
-    this.logger.log(`Correo de recuperacion enviado a ${options.email}`);
+    // Avoid logging PII (email address) in plaintext logs
+    this.logger.log('Correo de recuperación de contraseña enviado');
   }
 
   private getTransporter(): Transporter {

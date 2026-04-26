@@ -6,7 +6,7 @@ export interface UserDetail {
   email: string;
   fullName: string;
   isActive: boolean;
-  role: { name: AppRole };
+  role: AppRole;
   company?: { id: string; companyName: string } | null;
   createdAt: string;
 }

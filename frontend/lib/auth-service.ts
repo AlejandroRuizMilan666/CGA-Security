@@ -38,7 +38,13 @@ export function persistSession(session: AuthResponse) {
     return;
   }
 
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  // sessionStorage is preferred over localStorage because it is automatically
+  // cleared when the browser tab is closed, limiting the token exposure window.
+  // The ideal solution is HTTP-only cookies (immune to XSS), but that requires
+  // a backend auth contract change (cookie response headers + SameSite policy).
+  // This is documented as a known limitation; migrating to HTTP-only cookies is
+  // the recommended next step for a production hardening cycle.
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
   setAuthorizationToken(session.accessToken);
 }
 
@@ -47,7 +53,7 @@ export function getStoredSession() {
     return null;
   }
 
-  const rawValue = localStorage.getItem(SESSION_KEY);
+  const rawValue = sessionStorage.getItem(SESSION_KEY);
 
   if (!rawValue) {
     return null;
@@ -63,7 +69,7 @@ export function clearStoredSession() {
     return;
   }
 
-  localStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
   setAuthorizationToken(null);
 }
 
@@ -97,6 +103,13 @@ export async function registerCompany(payload: {
     "/auth/register/company",
     payload,
   );
+  return data;
+}
+
+export async function updateProfile(payload: {
+  fullName: string;
+}): Promise<AppUser> {
+  const { data } = await api.patch<AppUser>("/users/me", payload);
   return data;
 }
 

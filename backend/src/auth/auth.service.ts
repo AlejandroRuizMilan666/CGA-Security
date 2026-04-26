@@ -125,20 +125,39 @@ export class AuthService {
   }
 
   async refresh(dto: RefreshTokenDto) {
+    // Step 1: verify JWT signature / expiry (no DB required)
     const payload = await this.verifyRefreshToken(dto.refreshToken);
-    const user = await this.prismaService.user.findUnique({
-      where: { id: payload.sub },
-      include: { role: true, company: true },
+    const incomingHash = this.hashOpaqueToken(dto.refreshToken);
+
+    // Step 2: atomic check-and-consume inside a transaction.
+    // By nulling the hash within the same transaction as the lookup, we
+    // prevent a second concurrent request from reusing the same token even
+    // in the presence of a race condition (refresh token replay protection).
+    const user = await this.prismaService.$transaction(async (prisma) => {
+      const u = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        include: { role: true, company: true },
+      });
+
+      if (!u || !u.isActive || !u.refreshTokenHash) {
+        throw new UnauthorizedException('Refresh token inválido');
+      }
+
+      if (incomingHash !== u.refreshTokenHash) {
+        throw new UnauthorizedException('Refresh token inválido');
+      }
+
+      // Immediately consume (invalidate) the used token so it cannot be
+      // replayed.  issueTokensForUser() will store the new hash below.
+      await prisma.user.update({
+        where: { id: u.id },
+        data: { refreshTokenHash: null },
+      });
+
+      return u;
     });
 
-    if (!user || !user.isActive || !user.refreshTokenHash) {
-      throw new UnauthorizedException('Refresh token inválido');
-    }
-
-    if (this.hashOpaqueToken(dto.refreshToken) !== user.refreshTokenHash) {
-      throw new UnauthorizedException('Refresh token inválido');
-    }
-
+    // Step 3: issue a completely new token pair (rotation)
     return this.issueTokensForUser(user);
   }
 
@@ -224,12 +243,20 @@ export class AuthService {
       role: user.role.name,
     };
 
-    const accessToken = await this.jwtService.signAsync(payload);
+    // issuer / audience claims bind the token to this specific service and
+    // its intended consumer, preventing tokens from one service being
+    // accepted by another (OWASP A02).
+    const accessToken = await this.jwtService.signAsync(payload, {
+      issuer: 'cga-security-api',
+      audience: 'cga-security-app',
+    });
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>(
         'JWT_REFRESH_EXPIRES_IN',
       ) as StringValue,
+      issuer: 'cga-security-api',
+      audience: 'cga-security-app',
     });
 
     await this.prismaService.user.update({
@@ -277,6 +304,8 @@ export class AuthService {
     try {
       return await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        issuer: 'cga-security-api',
+        audience: 'cga-security-app',
       });
     } catch {
       throw new UnauthorizedException('Refresh token invalido');

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   UploadedFile,
   UseGuards,
@@ -32,7 +33,7 @@ export class DocumentsController {
 
   @Get('company/:companyId')
   @Roles(RoleName.ADMIN)
-  listCompanyDocuments(@Param('companyId') companyId: string) {
+  listCompanyDocuments(@Param('companyId', ParseUUIDPipe) companyId: string) {
     return this.documentsService.listCompanyDocuments(companyId);
   }
 
@@ -62,7 +63,7 @@ export class DocumentsController {
   @Get(':documentId/download')
   @Roles(RoleName.ADMIN, RoleName.EMPRESA)
   getDownloadLink(
-    @Param('documentId') documentId: string,
+    @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() currentUser: AuthenticatedUser,
   ) {
     return this.documentsService.getDownloadLink(documentId, currentUser);
@@ -71,7 +72,7 @@ export class DocumentsController {
   @Delete(':documentId')
   @Roles(RoleName.ADMIN, RoleName.EMPRESA)
   deleteDocument(
-    @Param('documentId') documentId: string,
+    @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() currentUser: AuthenticatedUser,
   ) {
     return this.documentsService.deleteDocument(documentId, currentUser);

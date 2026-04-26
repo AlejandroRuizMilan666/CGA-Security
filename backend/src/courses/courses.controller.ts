@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -45,7 +46,7 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ALUMNO)
   getMyProgress(
-    @Param('courseId') courseId: string,
+    @Param('courseId', ParseUUIDPipe) courseId: string,
     @CurrentUser() currentUser: AuthenticatedUser,
   ) {
     return this.coursesService.getMyCourseProgress(courseId, currentUser);
@@ -55,8 +56,8 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ALUMNO)
   completeModule(
-    @Param('courseId') courseId: string,
-    @Param('moduleId') moduleId: string,
+    @Param('courseId', ParseUUIDPipe) courseId: string,
+    @Param('moduleId', ParseUUIDPipe) moduleId: string,
     @CurrentUser() currentUser: AuthenticatedUser,
   ) {
     return this.coursesService.completeModule(courseId, moduleId, currentUser);
@@ -81,7 +82,7 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ADMIN)
   updateCourse(
-    @Param('courseId') courseId: string,
+    @Param('courseId', ParseUUIDPipe) courseId: string,
     @Body() dto: UpdateCourseDto,
   ) {
     return this.coursesService.updateCourse(courseId, dto);
@@ -90,7 +91,7 @@ export class CoursesController {
   @Delete(':courseId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ADMIN)
-  deleteCourse(@Param('courseId') courseId: string) {
+  deleteCourse(@Param('courseId', ParseUUIDPipe) courseId: string) {
     return this.coursesService.deleteCourse(courseId);
   }
 
@@ -98,7 +99,7 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ALUMNO)
   enrollInCourse(
-    @Param('courseId') courseId: string,
+    @Param('courseId', ParseUUIDPipe) courseId: string,
     @CurrentUser() currentUser: AuthenticatedUser,
   ) {
     return this.coursesService.enrollInCourse(courseId, currentUser);

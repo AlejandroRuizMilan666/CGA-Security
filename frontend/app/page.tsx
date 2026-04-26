@@ -2,6 +2,9 @@
 
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/lib/auth-context';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { faBuilding, faGraduationCap, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -12,21 +15,21 @@ const ROLE_ROUTES: Record<string, string> = {
   ALUMNO: '/alumno',
 };
 
-const SERVICES = [
+const SERVICES: { icon: IconDefinition; title: string; description: string }[] = [
   {
-    icon: '🔐',
+    icon: faShieldHalved,
     title: 'Auditorías de Seguridad',
     description:
-      'Análisis y diagnóstico profesional de la postura de seguridad de tu empresa. Panel privado para el intercambio seguro de informes y documentación de auditoría.',
+      'Análisis y diagnóstico profesional de la seguridad de tu empresa. Panel privado para el intercambio seguro de informes y documentación de auditoría.',
   },
   {
-    icon: '🎓',
+    icon: faGraduationCap,
     title: 'Formación Online',
     description:
       'Catálogo de cursos especializados en ciberseguridad. Aprende a tu ritmo con seguimiento de progreso por módulo y acceso a materiales en cualquier dispositivo.',
   },
   {
-    icon: '🏢',
+    icon: faBuilding,
     title: 'Panel Empresarial',
     description:
       'Entorno privado para empresas clientes. Descarga informes, comparte documentación con el equipo de CGA Security y gestiona tu perfil de forma segura.',
@@ -124,7 +127,9 @@ export default function Home() {
                   key={s.title}
                   className="rounded-2xl border border-slate-800 bg-slate-900 p-7 transition-colors hover:border-slate-700"
                 >
-                  <div className="mb-4 text-4xl">{s.icon}</div>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400">
+                    <FontAwesomeIcon icon={s.icon} className="h-6 w-6" />
+                  </div>
                   <h3 className="mb-2 text-lg font-bold text-white">{s.title}</h3>
                   <p className="text-sm leading-relaxed text-slate-400">{s.description}</p>
                 </div>

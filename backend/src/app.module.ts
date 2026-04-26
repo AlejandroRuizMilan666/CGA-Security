@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -18,10 +19,14 @@ import { UsersModule } from './users/users.module';
       isGlobal: true,
       validate: validateEnvironment,
     }),
+    // ── Rate limiting (OWASP A07) ──────────────────────────────────────
+    // 'api' throttle: general limit applied to all routes via APP_GUARD.
+    // Auth-specific routes override this with stricter limits via @Throttle.
     ThrottlerModule.forRoot([
       {
-        ttl: 60000,
-        limit: 10,
+        name: 'api',
+        ttl: 60_000,
+        limit: 60, // 60 req / min per IP for general API endpoints
       },
     ]),
     PrismaModule,
@@ -32,6 +37,11 @@ import { UsersModule } from './users/users.module';
     DocumentsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, BootstrapService],
+  providers: [
+    AppService,
+    BootstrapService,
+    // Apply ThrottlerGuard globally to every route (OWASP A07)
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

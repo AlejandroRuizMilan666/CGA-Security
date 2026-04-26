@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { RoleName } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -36,7 +44,7 @@ export class CompaniesController {
 
   @Get(':id')
   @Roles(RoleName.ADMIN)
-  getCompanyById(@Param('id') companyId: string) {
+  getCompanyById(@Param('id', ParseUUIDPipe) companyId: string) {
     return this.companiesService.getCompanyById(companyId);
   }
 }

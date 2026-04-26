@@ -11,11 +11,20 @@ import { z } from 'zod';
 
 /* ─── Schemas ─────────────────────────────────────────────────────────── */
 
+// Password complexity rules mirror the backend DTO validation (OWASP A07):
+// at least 8 chars, one uppercase, one digit, one special character.
+const passwordSchema = z
+  .string()
+  .min(8, 'Mínimo 8 caracteres')
+  .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
+  .regex(/[0-9]/, 'Debe contener al menos un número')
+  .regex(/[\W_]/, 'Debe contener al menos un carácter especial');
+
 const baseSchema = z
   .object({
     fullName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     email: z.string().email('Email inválido'),
-    password: z.string().min(8, 'Mínimo 8 caracteres'),
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -29,10 +38,15 @@ const empresaSchema = z
   .object({
     fullName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     email: z.string().email('Email inválido'),
-    password: z.string().min(8, 'Mínimo 8 caracteres'),
+    password: passwordSchema,
     confirmPassword: z.string(),
     companyName: z.string().min(2, 'Nombre de empresa requerido'),
-    taxId: z.string().min(5, 'CIF/NIF inválido'),
+    // Spanish NIF/CIF/NIE: 8-12 alphanumeric uppercase characters
+    taxId: z
+      .string()
+      .min(8, 'CIF/NIF inválido')
+      .max(12, 'CIF/NIF inválido')
+      .regex(/^[A-Z0-9]+$/, 'El CIF/NIF solo puede contener letras mayúsculas y números'),
     phone: z.string().optional(),
     address: z.string().optional(),
   })

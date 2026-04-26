@@ -69,11 +69,8 @@ export default function AlumnoDashboard() {
           {/* Active enrollments */}
           {enrollments.length > 0 && (
             <div>
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4">
                 <h2 className="text-lg font-semibold text-white">Mis cursos</h2>
-                <Link href="/alumno/mis-cursos" className="cursor-pointer text-sm font-semibold text-cyan-400 hover:text-cyan-300">
-                  Ver todos →
-                </Link>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {enrollments.slice(0, 4).map((enrollment) => (

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { RoleName } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -35,14 +43,14 @@ export class UsersController {
 
   @Get(':id')
   @Roles(RoleName.ADMIN)
-  getUserById(@Param('id') userId: string) {
+  getUserById(@Param('id', ParseUUIDPipe) userId: string) {
     return this.usersService.getUserById(userId);
   }
 
   @Patch(':id')
   @Roles(RoleName.ADMIN)
   adminUpdateUser(
-    @Param('id') userId: string,
+    @Param('id', ParseUUIDPipe) userId: string,
     @Body() dto: AdminUpdateUserDto,
   ) {
     return this.usersService.adminUpdateUser(userId, dto);

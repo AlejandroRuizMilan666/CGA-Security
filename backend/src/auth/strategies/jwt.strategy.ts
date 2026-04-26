@@ -16,6 +16,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET')!,
+      // Validate issuer and audience claims so tokens signed by a different
+      // service or intended for a different audience are rejected (OWASP A02)
+      issuer: 'cga-security-api',
+      audience: 'cga-security-app',
     });
   }
 
