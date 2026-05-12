@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -27,6 +28,8 @@ type UserWithRelations = Prisma.UserGetPayload<{
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
@@ -178,7 +181,7 @@ export class AuthService {
     if (!user || !user.isActive) {
       return {
         message:
-          'Si el usuario existe, recibira un correo con instrucciones para restablecer la contraseña',
+          'Enlace enviado para restablecer tu contraseña correctamente. Revisa también tu carpeta de spam.',
       };
     }
 
@@ -196,15 +199,22 @@ export class AuthService {
       },
     });
 
-    await this.mailService.sendPasswordResetEmail({
-      email: user.email,
-      fullName: user.fullName,
-      resetUrl,
-    });
+    try {
+      await this.mailService.sendPasswordResetEmail({
+        email: user.email,
+        fullName: user.fullName,
+        resetUrl,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Error enviando correo de recuperación de contraseña',
+        error instanceof Error ? error.stack : undefined,
+      );
+    }
 
     return {
       message:
-        'Si el usuario existe, recibira un correo con instrucciones para restablecer la contraseña',
+        'Enlace enviado para restablecer tu contraseña correctamente. Revisa también tu carpeta de spam.',
     };
   }
 
@@ -308,7 +318,7 @@ export class AuthService {
         audience: 'cga-security-app',
       });
     } catch {
-      throw new UnauthorizedException('Refresh token invalido');
+      throw new UnauthorizedException('Refresh token inválido');
     }
   }
 

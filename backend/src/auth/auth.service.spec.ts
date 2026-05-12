@@ -130,6 +130,16 @@ describe('AuthService', () => {
   });
 
   it('rejects refresh when the persisted hash does not match', async () => {
+    transactionMock.mockImplementation(
+      async (callback: (prisma: typeof prismaService) => Promise<unknown>) =>
+        callback({
+          user: {
+            findUnique: userFindUniqueMock,
+            update: userUpdateMock,
+          },
+        } as unknown as typeof prismaService),
+    );
+
     verifyAsyncMock.mockResolvedValue({
       sub: 'user-1',
       email: 'student@example.com',
@@ -197,5 +207,23 @@ describe('AuthService', () => {
     expect(firstMailCall[0].email).toBe('student@example.com');
     expect(firstMailCall[0].fullName).toBe('Student');
     expect(firstMailCall[0].resetUrl).toContain('/reset-password?token=');
+  });
+
+  it('returns generic message even when mail transport fails', async () => {
+    userFindUniqueMock.mockResolvedValue({
+      id: 'user-1',
+      email: 'student@example.com',
+      fullName: 'Student',
+      isActive: true,
+    });
+    userUpdateMock.mockResolvedValue(undefined);
+    sendPasswordResetEmailMock.mockRejectedValue(new Error('SMTP down'));
+
+    const result = await authService.forgotPassword({
+      email: 'student@example.com',
+    });
+
+    expect(userUpdateMock).toHaveBeenCalled();
+    expect(result.message).toContain('Si el usuario existe');
   });
 });

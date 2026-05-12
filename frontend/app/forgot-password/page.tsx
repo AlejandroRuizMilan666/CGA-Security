@@ -1,6 +1,8 @@
 'use client';
 
 import { forgotPassword } from '@/lib/auth-service';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelopeCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -52,12 +54,11 @@ export default function ForgotPasswordPage() {
 
         {submitted ? (
           <div className="space-y-5 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/15 text-2xl">
-              ✉️
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-300">
+              <FontAwesomeIcon icon={faEnvelopeCircleCheck} className="h-7 w-7" />
             </div>
             <p className="text-sm text-slate-300">
-              Si el usuario existe, recibirás un correo con instrucciones para restablecer la
-              contraseña.
+              Enlace enviado para restablecer tu contraseña correctamente. Revisa también tu carpeta de spam.
             </p>
             <Link
               href="/login"

@@ -2,6 +2,8 @@
 
 import { Spinner } from '@/components/ui/spinner';
 import { resetPassword } from '@/lib/auth-service';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -73,8 +75,8 @@ function ResetPasswordForm() {
   if (success) {
     return (
       <div className="space-y-5 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/15 text-2xl">
-          ✅
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-300">
+          <FontAwesomeIcon icon={faCheckCircle} className="h-7 w-7" />
         </div>
         <p className="text-sm text-slate-300">
           Contraseña actualizada correctamente. Redirigiendo al inicio de sesión…
